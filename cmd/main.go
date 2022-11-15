@@ -13,9 +13,12 @@ import (
 )
 
 func main() {
-	if err := initConfig; err != nil {
-		logrus.Fatalf("error reading config file: %s", err)
-	}
+	//logrus set json format
+	logrus.SetFormatter(new(logrus.JSONFormatter))
+
+	//if err := initConfig; err != nil {
+	//	logrus.Fatalf("error reading config file: %s", err)
+	//}
 
 	if err := godotenv.Load(); err != nil {
 		logrus.Fatalf("error loading env variables %s", err.Error())
@@ -25,7 +28,7 @@ func main() {
 		Host:     "localhost",
 		Port:     "5436",
 		Username: "postgres",
-		Password: os.Getenv("DB_PASSWORD"),
+		Password: os.Getenv("DB_PASSWORD"), //qwerty
 		DBName:   "postgres",
 		SSLMode:  "disable",
 	})
