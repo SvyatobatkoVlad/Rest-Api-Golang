@@ -2,7 +2,7 @@ package Rest_Api_Golang
 
 type TodoList struct {
 	Id          int    `json:"id"`
-	Title       string `json:"title"`
+	Title       string `json:"title" binding:"required"`
 	Description string `json:"description"`
 }
 
@@ -16,7 +16,7 @@ type TodoItem struct {
 	Id          int
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	Done        bool   `json:"description"`
+	Done        bool   `json:"done"`
 }
 
 type ListsItem struct {
