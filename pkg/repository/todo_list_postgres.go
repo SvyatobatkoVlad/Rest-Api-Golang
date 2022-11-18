@@ -4,6 +4,8 @@ import (
 	"fmt"
 	root "github.com/SvyatobatkoVlad/Rest-Api-Golang"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 type TodoListPostgres struct {
@@ -58,4 +60,38 @@ func (t *TodoListPostgres) GetByIDList(userId, listId int) (root.TodoList, error
 	err := t.db.Get(&lists, query, userId, listId)
 
 	return lists, err
+}
+
+func (t *TodoListPostgres) DeleteByID(userId, listId int) error {
+	query := fmt.Sprintf("DELETE FROM %s tl USING %S ul WHERE tl.id = ul.list_id AND ul.user_id=$1 AND ul.list_id=$2",
+		todoListTable, usersListsTable)
+	_, err := t.db.Exec(query, userId, listId)
+	return err
+}
+
+func (t *TodoListPostgres) UpdatedByID(userId, listId int, input root.UpdateListInput) error {
+	setValues := make([]string, 0)
+	args := make([]interface{}, 0)
+	argId := 1
+
+	if input.Title != nil {
+		setValues = append(setValues, fmt.Sprintf("title=$%d", argId))
+		args = append(args, *input.Title)
+		argId++
+	}
+
+	if input.Description != nil {
+		setValues = append(setValues, fmt.Sprintf("description=$%d", argId))
+		args = append(args, *input.Title)
+		argId++
+	}
+
+	setQuery := strings.Join(setValues, ", ")
+
+	query := fmt.Sprintf("UPDATE %S tl SET %s FROM %S ul WHERE tl.id = ul.list_id AND ul.list_id=$%d AND ul.user_id=$%d",
+		todoListTable, setQuery, usersListsTable, argId, argId+1)
+	logrus.Debugf("updateQuery: %s", query)
+
+	_, err := t.db.Exec(query, args...)
+	return err
 }
