@@ -15,6 +15,5 @@
 ### Connect to db
 ``docker exec -it  {container_id} /bin/bash``
 
-
-###schema db (Postgres)
+### Schema db (Postgres)
 ![](images/schema_db_postgres.png)
