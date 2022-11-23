@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	server "github.com/SvyatobatkoVlad/Rest-Api-Golang"
 	handler "github.com/SvyatobatkoVlad/Rest-Api-Golang/pkg/handler"
 	"github.com/SvyatobatkoVlad/Rest-Api-Golang/pkg/repository"
@@ -10,6 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -42,10 +45,27 @@ func main() {
 	handlers := handler.NewHandler(services)
 
 	srv := new(server.Server)
+	go func() {
+		//TODO viper viper.GetString("port")
+		if err := srv.Run("8000", handlers.InitRoutes()); err != nil {
+			logrus.Fatalf("error running http server: %s", err.Error())
+		}
+	}()
 
-	//TODO viper viper.GetString("port")
-	if err := srv.Run("8000", handlers.InitRoutes()); err != nil {
-		logrus.Fatalf("error running http server: %s", err.Error())
+	logrus.Println("App Started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	logrus.Println("App Shutting Down")
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		logrus.Errorf("error Shutdown failed: %s", err.Error())
+	}
+
+	if err := db.Close(); err != nil {
+		logrus.Errorf("error db.Close() failed: %s ", err.Error())
 	}
 }
 
